@@ -1,23 +1,26 @@
-from std/json import JsonNode, parseFile, parseJson, pretty, add, `[]`, `%*`
-from std/httpclient import HttpClient, newHttpClient
-from std/os import absolutePath, getCurrentDir
-from "./modules/config.nim" import Config, newConfig
-from "./modules/links.nim" import getSearchParams, toSearchLink
-from "./modules/scraper.nim" import JobLink, getSearchPage, getLinksFromPage
+from std/json import JsonNode, parseFile, parseJson, pretty, toUgly, add, to, `[]`, `%*`
+from std/httpclient import HttpClient, Response, newHttpClient
+from std/os import paramStr
+from std/strutils import parseInt
+from "./modules/scraper.nim" import getJobData
+import jester
 
 let configJson: JsonNode = parseFile("./config.json")
-let jobConfig: Config = configJson.newConfig()
-var client: HttpClient = newHttpClient()
 
-let searchLink: string = jobConfig.getSearchParams().toSearchLink()
-let searchPage: string = client.getSearchPage(searchLink)
-let jobLinks = searchPage.getLinksFromPage()
+router apiRouter:
+  post "/api/jobs":
+    try:
+      let jsonRes = getJobData(request.body().parseJson())
+      resp(jsonRes.pretty(), contentType="application/json")
+    except:
+      let error = getCurrentExceptionMsg()
+      resp error
 
-var linkJson: JsonNode = parseJson("{\"jobs\":[]}")
-for linkGroup in jobLinks:
-  linkJson["jobs"].add(%*linkGroup)
+proc main() =
+  let port = paramStr(1).parseInt().Port
+  let settings = newSettings(port=port)
+  var jester = initJester(apiRouter, settings=settings)
+  jester.serve()
 
-writeFile("output.json", linkJson.pretty())
-echo "Search link: " & searchLink
-echo "Jobs found: " & $jobLinks.len()
-echo "Output file: " & absolutePath("./output.json", getCurrentDir())
+when isMainModule:
+  main()

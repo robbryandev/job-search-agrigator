@@ -13,4 +13,4 @@ proc newConfig*(configJson: JsonNode): Config =
       exclude: configJson["exclude"].to(seq[string])
     )
   except:
-    quit("Invalid config.json")
+    raise newException(Exception, "Failed to parse config")

@@ -1,4 +1,6 @@
-import std/[httpclient, htmlparser, xmltree, strtabs, strutils]
+import std/[httpclient, htmlparser, xmltree, strtabs, strutils, json]
+from "./config.nim" import Config, newConfig
+from "./links.nim" import getSearchParams, toSearchLink
 
 type JobLink* = object
   title, url: string
@@ -31,3 +33,18 @@ proc getLinksFromPage*(page: string): seq[JobLink] =
               for headerDiv in header.findAll("div"):
                 title = headerDiv.innerText()
             result.add(newJobLink(title, url))
+
+proc getJobData*(jsonConfig: JsonNode): JsonNode =
+  let jobConfig: Config = jsonConfig.newConfig()
+  var client: HttpClient = newHttpClient()
+
+  let searchLink: string = jobConfig.getSearchParams().toSearchLink()
+  let searchPage: string = client.getSearchPage(searchLink)
+  let jobLinks: seq[JobLink] = searchPage.getLinksFromPage()
+
+  var linkJson: JsonNode = parseJson("{\"jobs\":$data, \"count\": $num}".multiReplace(
+    ("$data", pretty(%*jobLinks)),
+    ("$num", $jobLinks.len())
+  ))
+
+  return linkJson
