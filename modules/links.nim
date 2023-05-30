@@ -56,7 +56,7 @@ proc toSearchLink*(paramStr: string): string =
     minus
   ]
 
-  result = "https://www.google.com/search?q=" & paramStr.multiReplace(
+  result = "https://www.google.com/search?num=1000&q=" & paramStr.multiReplace(
     symbols[0],
     symbols[1],
     symbols[2],
