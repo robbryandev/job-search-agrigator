@@ -1,11 +1,8 @@
-from std/json import JsonNode, parseFile, parseJson, pretty, toUgly, add, to, `[]`, `%*`
-from std/httpclient import HttpClient, Response, newHttpClient
+from std/json import JsonNode, parseJson, pretty
 from std/os import paramStr
 from std/strutils import parseInt
 from "./modules/scraper.nim" import getJobData
 import jester
-
-let configJson: JsonNode = parseFile("./config.json")
 
 router apiRouter:
   post "/api/jobs":

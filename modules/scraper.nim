@@ -42,9 +42,10 @@ proc getJobData*(jsonConfig: JsonNode): JsonNode =
   let searchPage: string = client.getSearchPage(searchLink)
   let jobLinks: seq[JobLink] = searchPage.getLinksFromPage()
 
-  var linkJson: JsonNode = parseJson("{\"jobs\":$data, \"count\": $num}".multiReplace(
+  var linkJson: JsonNode = parseJson("{\"jobs\":$data, \"count\": $num, \"link\": \"$link\"}".multiReplace(
     ("$data", pretty(%*jobLinks)),
-    ("$num", $jobLinks.len())
+    ("$num", $jobLinks.len()),
+    ("$link", searchLink)
   ))
 
   return linkJson

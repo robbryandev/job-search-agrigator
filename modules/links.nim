@@ -1,5 +1,6 @@
 from std/strformat import fmt
-from std/strutils import join, multiReplace
+from std/strutils import join, multiReplace, split
+from std/times import now, weeks, `$`, `-`
 from "./config.nim" import Config
 
 # get search parameters to send to the linkBuilder
@@ -32,6 +33,12 @@ proc getSearchParams*(config: Config): string =
   for ex in config.exclude:
     exclude.add(fmt"-{ex}")
   linkParts.add(exclude.join(" "))
+
+  # query within a week
+  let oneWeekAgo = now() - weeks(1)
+  let weekString = $oneWeekAgo
+  linkParts.add("after:" & weekString.split("T")[0])
+
 
   # Join the list of strings together to form the search query.
   return linkParts.join(" ")
